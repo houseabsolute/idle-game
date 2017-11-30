@@ -4,27 +4,28 @@ import { Button, Col, Row } from "reactstrap";
 
 import { think } from "../actions";
 
-const Stage1 = ({ cash, dispatch, thoughts }) => {
+import Actions from "./Stage1/Actions";
+
+const Stage1 = ({ cash, dispatch, stage1 }) => {
   const onThinkClick = e => {
     e.preventDefault();
     dispatch(think(1));
   };
 
   return (
-    <React.Fragment>
-      <Row>
-        <Col>
-          Cash: ${cash}
-          <br />
-          Thoughts: {thoughts}
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Button onClick={onThinkClick}>Think</Button>
-        </Col>
-      </Row>
-    </React.Fragment>
+    <Row>
+      <Col>
+        Cash: ${cash}
+        <br />
+        Thoughts: {stage1.thoughts}
+      </Col>
+      <Col>
+        <Button onClick={onThinkClick}>Think</Button>
+      </Col>
+      <Col>
+        <Actions cash={cash} dispatch={dispatch} {...stage1} />
+      </Col>
+    </Row>
   );
 };
 

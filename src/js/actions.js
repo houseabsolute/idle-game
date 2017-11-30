@@ -1,10 +1,18 @@
 export const ADD_CASH = "ADD_CASH";
 
-export const addCase = amount => ({ type: ADD_CASH, amount });
+export const addCash = amount => ({ type: ADD_CASH, amount });
 
-export const THINK = "THINK";
+export const HIRE_DESIGNER = "HIRE_DESIGNER";
 
-export const think = amount => ({ type: THINK, amount });
+export const hireDesigner = (quality, tps) => ({
+  type: HIRE_DESIGNER,
+  quality,
+  tps
+});
+
+export const RELEASE_GAME = "RELEASE_GAME";
+
+export const releaseGame = amount => ({ type: RELEASE_GAME, amount });
 
 export const RESET_STAGE = "RESET_STAGE";
 
@@ -17,6 +25,14 @@ export const spendCash = amount => ({ type: SPEND_CASH, amount });
 export const SPEND_THOUGHTS = "SPEND_THOUGHTS";
 
 export const spendThoughts = amount => ({ type: SPEND_THOUGHTS, amount });
+
+export const THINK = "THINK";
+
+export const think = amount => ({ type: THINK, amount });
+
+export const TICK = "TICK";
+
+export const tick = () => ({ type: TICK });
 
 export const UPDATE_STAGE = "UPDATE_STAGE";
 

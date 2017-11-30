@@ -3,6 +3,7 @@ import { render } from "react-dom";
 import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
 
+import { tick } from "./actions";
 import idleApp from "./reducers";
 import App from "./App";
 
@@ -13,7 +14,37 @@ const logger = store => next => action => {
   return returnValue;
 };
 
-const store = createStore(idleApp, undefined, applyMiddleware(logger));
+const asyncDispatchMiddleware = store => next => action => {
+  let syncActivityFinished = false;
+  let actionQueue = [];
+
+  function flushQueue() {
+    actionQueue.forEach(a => store.dispatch(a)); // flush queue
+    actionQueue = [];
+  }
+
+  function asyncDispatch(asyncAction) {
+    actionQueue = actionQueue.concat([asyncAction]);
+
+    if (syncActivityFinished) {
+      flushQueue();
+    }
+  }
+
+  const actionWithAsyncDispatch = Object.assign({}, action, { asyncDispatch });
+
+  next(actionWithAsyncDispatch);
+  syncActivityFinished = true;
+  flushQueue();
+};
+
+const store = createStore(
+  idleApp,
+  undefined,
+  applyMiddleware(asyncDispatchMiddleware, logger)
+);
+
+setInterval(() => store.dispatch(tick()), 100);
 
 render(
   <Provider store={store}>

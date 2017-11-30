@@ -2,10 +2,14 @@ import { combineReducers } from "redux";
 
 import {
   ADD_CASH,
+  addCash,
+  RELEASE_GAME,
   RESET_STAGE,
   SPEND_CASH,
   SPEND_THOUGHTS,
   THINK,
+  think,
+  TICK,
   UPDATE_STAGE
 } from "./actions";
 
@@ -31,17 +35,32 @@ const currentStage = (state = 1, action) => {
   }
 };
 
-const stage1 = (state = { thoughts: 0 }, action) => {
+const stage1 = (state = { designers: 0, games: 0, thoughts: 0 }, action) => {
   switch (action.type) {
-    case THINK:
+    case RELEASE_GAME: {
       return {
         ...state,
-        thoughts: state.thoughts + 1
+        games: state.games + action.amount
       };
+    }
     case SPEND_THOUGHTS:
       return {
         ...state,
         thoughts: state.thoughts - action.amount
+      };
+    case TICK: {
+      if (state.games) {
+        action.asyncDispatch(addCash(state.games));
+      }
+      if (state.designers) {
+        action.asyncDispatch(think(state.designers));
+      }
+      return state;
+    }
+    case THINK:
+      return {
+        ...state,
+        thoughts: state.thoughts + 1
       };
     default:
       return state;
