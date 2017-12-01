@@ -15,15 +15,18 @@ const Stage1 = ({ cash, dispatch, stage1 }) => {
   return (
     <Row>
       <Col>
-        Cash: ${cash}
-        <br />
-        Thoughts: {stage1.thoughts}
+        <Row>
+          <Col>Cash: ${Math.round(cash)}</Col>
+        </Row>
+        <Row>
+          <Col>Thoughts: {Math.round(stage1.thoughts)}</Col>
+        </Row>
       </Col>
       <Col>
         <Button onClick={onThinkClick}>Think</Button>
       </Col>
       <Col>
-        <Actions cash={cash} dispatch={dispatch} {...stage1} />
+        <Actions cash={cash} dispatch={dispatch} stage1={stage1} />
       </Col>
     </Row>
   );

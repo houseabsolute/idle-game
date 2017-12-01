@@ -3,7 +3,6 @@ import { render } from "react-dom";
 import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
 
-import { tick } from "./actions";
 import idleApp from "./reducers";
 import App from "./App";
 
@@ -43,8 +42,6 @@ const store = createStore(
   undefined,
   applyMiddleware(asyncDispatchMiddleware, logger)
 );
-
-setInterval(() => store.dispatch(tick()), 100);
 
 render(
   <Provider store={store}>

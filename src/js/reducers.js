@@ -3,13 +3,17 @@ import { combineReducers } from "redux";
 import {
   ADD_CASH,
   addCash,
+  DESIGNER_TICK,
+  designerTick,
+  GAME_TICK,
+  gameTick,
+  HIRE_DESIGNER,
   RELEASE_GAME,
   RESET_STAGE,
   SPEND_CASH,
   SPEND_THOUGHTS,
   THINK,
   think,
-  TICK,
   UPDATE_STAGE
 } from "./actions";
 
@@ -35,12 +39,54 @@ const currentStage = (state = 1, action) => {
   }
 };
 
-const stage1 = (state = { designers: 0, games: 0, thoughts: 0 }, action) => {
+const tickTime = 100;
+const ticksPerSecond = 1000 / tickTime;
+
+const stage1 = (
+  state = {
+    designers: [],
+    designerTimers: [],
+    games: 0,
+    gameTimers: [],
+    gameValue: 1,
+    thoughts: 500
+  },
+  action
+) => {
   switch (action.type) {
-    case RELEASE_GAME: {
+    case DESIGNER_TICK: {
+      action.asyncDispatch(
+        think(state.designers.reduce((t, d) => t + d.tps) / ticksPerSecond)
+      );
+      return state;
+    }
+    case GAME_TICK: {
+      action.asyncDispatch(
+        addCash(state.games * state.gameValue / ticksPerSecond)
+      );
+      return state;
+    }
+    case HIRE_DESIGNER: {
+      const id = setInterval(() => {
+        action.asyncDispatch(designerTick());
+      }, tickTime);
       return {
         ...state,
-        games: state.games + action.amount
+        designerTimers: [...state.designerTimers, id],
+        designers: [
+          ...state.designers,
+          { quality: action.quality, tps: action.tps }
+        ]
+      };
+    }
+    case RELEASE_GAME: {
+      const id = setInterval(() => {
+        action.asyncDispatch(gameTick());
+      }, tickTime);
+      return {
+        ...state,
+        gameTimers: [...state.gameTimers, id],
+        games: state.games + 1
       };
     }
     case SPEND_THOUGHTS:
@@ -48,15 +94,6 @@ const stage1 = (state = { designers: 0, games: 0, thoughts: 0 }, action) => {
         ...state,
         thoughts: state.thoughts - action.amount
       };
-    case TICK: {
-      if (state.games) {
-        action.asyncDispatch(addCash(state.games));
-      }
-      if (state.designers) {
-        action.asyncDispatch(think(state.designers));
-      }
-      return state;
-    }
     case THINK:
       return {
         ...state,

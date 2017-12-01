@@ -13,11 +13,21 @@ const actions = [
   {
     name: "Release your first idle game (50 thoughts)",
     description: "+$10 per second",
-    showIf: (cash, thoughts) => thoughts >= 1,
-    requires: (cash, thoughts) => thoughts >= 50,
+    showIf: (cash, stage1) => stage1.thoughts >= 1 && !stage1.games,
+    requires: (cash, stage1) => stage1.thoughts >= 50,
     effect: dispatch => {
-      dispatch(releaseGame(1));
+      dispatch(releaseGame());
       dispatch(spendThoughts(50));
+    }
+  },
+  {
+    name: "Release another idle game (100 thoughts)",
+    description: "+$10 per second",
+    showIf: (cash, stage1) => stage1.thoughts >= 1 && stage1.games,
+    requires: (cash, stage1) => stage1.thoughts >= 100,
+    effect: dispatch => {
+      dispatch(releaseGame());
+      dispatch(spendThoughts(100));
     }
   },
   {
@@ -32,16 +42,16 @@ const actions = [
   }
 ];
 
-const Actions = ({ cash, dispatch, thoughts }) =>
+const Actions = ({ cash, dispatch, stage1 }) =>
   actions.map(a => {
-    if (!a.showIf(cash, thoughts)) {
+    if (!a.showIf(cash, stage1)) {
       return null;
     }
 
     return (
       <div key={a.name}>
         <Button
-          disabled={!a.requires(cash, thoughts)}
+          disabled={!a.requires(cash, stage1)}
           onClick={() => a.effect(dispatch)}
         >
           <strong>{a.name}</strong>
