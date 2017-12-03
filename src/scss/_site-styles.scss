@@ -1,0 +1,15 @@
+.game-log {
+    background-color: black;
+    color: #eee;
+    font-size: 90%;
+    font-family: monospace;
+    list-style: none;
+    padding: 0.5rem;
+    height: 15rem;
+    overflow: scroll;
+
+    li::before {
+        content: "∷ ";
+        font-size: 110%;
+    }
+}

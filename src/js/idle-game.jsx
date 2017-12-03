@@ -3,7 +3,8 @@ import { render } from "react-dom";
 import { Provider } from "react-redux";
 import { applyMiddleware, createStore } from "redux";
 
-import idleApp from "./reducers";
+import { addCash, hireDesigner, think, tick } from "./actions";
+import { idleApp, tickTime } from "./reducers";
 import App from "./App";
 
 const logger = store => next => action => {
@@ -42,6 +43,17 @@ const store = createStore(
   undefined,
   applyMiddleware(asyncDispatchMiddleware, logger)
 );
+
+store.dispatch(addCash(5000));
+store.dispatch(think(1000));
+store.dispatch(
+  hireDesigner({ hiringCost: 0, ongoingCost: 5, quality: "mediocre", tps: 1 })
+);
+store.dispatch(
+  hireDesigner({ hiringCost: 0, ongoingCost: 8, quality: "mediocre", tps: 2 })
+);
+
+setInterval(() => store.dispatch(tick()), tickTime);
 
 render(
   <Provider store={store}>

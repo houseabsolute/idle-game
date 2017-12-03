@@ -3,30 +3,23 @@ import { combineReducers } from "redux";
 import {
   ADD_CASH,
   addCash,
-  DESIGNER_TICK,
-  designerTick,
-  GAME_TICK,
-  gameTick,
   HIRE_DESIGNER,
+  LOG_MESSAGE,
+  logMessage,
   RELEASE_GAME,
   RESET_STAGE,
   SPEND_CASH,
+  spendCash,
   SPEND_THOUGHTS,
+  spendThoughts,
+  TICK,
   THINK,
   think,
   UPDATE_STAGE
 } from "./actions";
 
-const cash = (state = 0, action) => {
-  switch (action.type) {
-    case ADD_CASH:
-      return state + action.amount;
-    case SPEND_CASH:
-      return state - action.amount;
-    default:
-      return state;
-  }
-};
+export const tickTime = 20;
+const ticksPerSecond = 1000 / tickTime;
 
 const currentStage = (state = 1, action) => {
   switch (action.type) {
@@ -39,61 +32,78 @@ const currentStage = (state = 1, action) => {
   }
 };
 
-const tickTime = 100;
-const ticksPerSecond = 1000 / tickTime;
+const log = (state = [], action) => {
+  switch (action.type) {
+    case LOG_MESSAGE:
+      return [...state, action.message];
+    default:
+      return state;
+  }
+};
 
 const stage1 = (
   state = {
+    cash: 0,
+    cps: 0,
     designers: [],
-    designerTimers: [],
-    games: 0,
-    gameTimers: [],
-    gameValue: 1,
-    thoughts: 500
+    games: [],
+    gameMultiplier: 5,
+    thoughts: 0,
+    tps: 0
   },
   action
 ) => {
   switch (action.type) {
-    case DESIGNER_TICK: {
-      action.asyncDispatch(
-        think(state.designers.reduce((t, d) => t + d.tps) / ticksPerSecond)
-      );
-      return state;
-    }
-    case GAME_TICK: {
-      action.asyncDispatch(
-        addCash(state.games * state.gameValue / ticksPerSecond)
-      );
-      return state;
-    }
+    case ADD_CASH:
+      return { ...state, cash: state.cash + action.amount };
     case HIRE_DESIGNER: {
-      const id = setInterval(() => {
-        action.asyncDispatch(designerTick());
-      }, tickTime);
+      action.asyncDispatch(spendCash(action.designer.hiringCost));
+      action.asyncDispatch(
+        logMessage(
+          `Hired ${action.designer.name}, a ${
+            action.designer.quality
+          } designer.`
+        )
+      );
       return {
         ...state,
-        designerTimers: [...state.designerTimers, id],
-        designers: [
-          ...state.designers,
-          { quality: action.quality, tps: action.tps }
-        ]
+        designers: [...state.designers, action.designer]
       };
     }
     case RELEASE_GAME: {
-      const id = setInterval(() => {
-        action.asyncDispatch(gameTick());
-      }, tickTime);
+      action.asyncDispatch(spendThoughts(action.game.thoughts));
+      action.asyncDispatch(logMessage(`Released ${action.game.name}.`));
       return {
         ...state,
-        gameTimers: [...state.gameTimers, id],
-        games: state.games + 1
+        games: [...state.games, action.game]
       };
     }
+    case SPEND_CASH:
+      return { ...state, cash: state.cash - action.amount };
     case SPEND_THOUGHTS:
       return {
         ...state,
         thoughts: state.thoughts - action.amount
       };
+    case TICK: {
+      const earnings =
+        state.games.length * state.gameMultiplier / ticksPerSecond;
+      if (earnings !== 0) {
+        action.asyncDispatch(addCash(earnings));
+      }
+
+      const cost = state.designers.reduce((t, d) => t + d.ongoingCost, 0);
+      if (cost > state.cash) {
+        return state;
+      }
+      action.asyncDispatch(spendCash(cost / ticksPerSecond));
+
+      const tps = state.designers.reduce((t, d) => t + d.tps, 0);
+      if (tps !== 0) {
+        action.asyncDispatch(think(tps / ticksPerSecond));
+      }
+      return state;
+    }
     case THINK:
       return {
         ...state,
@@ -104,10 +114,8 @@ const stage1 = (
   }
 };
 
-const idleApp = combineReducers({
-  cash,
+export const idleApp = combineReducers({
   currentStage,
+  log,
   stage1
 });
-
-export default idleApp;

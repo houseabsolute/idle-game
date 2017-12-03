@@ -2,6 +2,7 @@ import React from "react";
 
 import { Col, Row } from "reactstrap";
 
+import LogContainer from "./containers/LogContainer";
 import VisibleStage from "./containers/VisibleStage";
 
 const App = () => (
@@ -12,6 +13,7 @@ const App = () => (
       </Col>
     </Row>
     <VisibleStage />
+    <LogContainer />
   </div>
 );
 
