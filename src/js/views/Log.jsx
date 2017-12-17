@@ -1,23 +1,36 @@
 import React from "react";
 
-import { Card, CardBody, CardText, CardTitle, Col, Row } from "reactstrap";
+import { Col, Row } from "reactstrap";
 
-const Log = ({ log }) => {
-  const messages = log.map(m => <li>{m}</li>);
-  return (
-    <Row>
-      <Col>
-        <Card>
-          <CardBody>
-            <CardTitle>Log</CardTitle>
-            <CardText>
-              <ul className="game-log">{messages}</ul>
-            </CardText>
-          </CardBody>
-        </Card>
-      </Col>
-    </Row>
-  );
-};
+class Log extends React.Component {
+  componentDidMount() {
+    this.scrollToBottom();
+  }
+
+  componentDidUpdate() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom() {
+    this.gameLog.scrollTop =
+      this.gameLog.scrollHeight - this.gameLog.clientHeight;
+  }
+
+  render() {
+    const messages = this.props.log.map(m => <li key={m}>{m}</li>);
+    return (
+      <Row>
+        <Col>
+          <div>
+            <h2>Log</h2>
+            <ul className="game-log" ref={e => (this.gameLog = e)}>
+              {messages}
+            </ul>
+          </div>
+        </Col>
+      </Row>
+    );
+  }
+}
 
 export default Log;
